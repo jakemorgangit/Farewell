@@ -11,16 +11,51 @@ let formattedTime = currentDatetime.toLocaleTimeString();
 const typeWriter = async (sqlLine, speed) => {
   return new Promise((resolve, reject) => {
     let i = 0;
+    let mistypes = 0;
     const txt = sqlLine.text;
     const isHtml = sqlLine.isHTML || false;
     const isTyped = sqlLine.typed || false;
+    const isMistyped = sqlLine.isMistyped || false;
+    const mistypeDelay = sqlLine.mistypeDelay || 250; // Default delay before correcting a mistake
     const isSqlPrompt = sqlLine.sqlPrompt || false;
+    const isBashPrompt = sqlLine.bashPrompt || false;
     const typingDelay = sqlLine.typingDelay || 0;
   
     // Function to get a random typing speed between a range
     const getRandomSpeed = (min, max) => {
       return Math.random() * (max - min) + min;
     };
+
+    // Function to generate a common typographical error for a given character
+    const getTypo = (char) => {
+      const keyboard = [
+        'qwertyuiop',
+        'asdfghjkl',
+        'zxcvbnm',
+      ];
+      let typo = char;
+      keyboard.some((row) => {
+        const index = row.indexOf(char);
+        if (index !== -1) {
+          const direction = Math.random() > 0.5 ? 1 : -1;
+          const neighborIndex = index + direction;
+          // Check if the neighbor character exists
+          if (neighborIndex >= 0 && neighborIndex < row.length) {
+            typo = row[neighborIndex];
+            return true; // Stop the loop once the typo has been found
+          }
+        }
+        return false; // Continue the loop
+      });
+      return typo;
+    };
+
+    // Function to get a random number of mistypes between a range
+    const getRandomMistypes = (min, max) => {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    };
+
+    const maxMistypes = isMistyped ? getRandomMistypes(2, 4) : 0;
 
     if (isHtml && txt === '<br>') {
       bootDiv.appendChild(document.createElement('br'));
@@ -30,7 +65,11 @@ const typeWriter = async (sqlLine, speed) => {
       const line = document.createElement('div');
       bootDiv.appendChild(line);
       bootDiv.scrollTop = bootDiv.scrollHeight;
-
+	  
+	  if (isBashPrompt) {
+        line.textContent += "root@test-server:~$ ";
+      }	  
+	  
       if (isSqlPrompt) {
         line.textContent += "SQL> ";
       }
@@ -43,11 +82,33 @@ const typeWriter = async (sqlLine, speed) => {
         setTimeout(() => { // delay before typing starts
           const typeCharacter = () => {
             if (i < txt.length) {
-              line.textContent += txt.charAt(i);
-              i++;
-              bootDiv.scrollTop = bootDiv.scrollHeight + (0.1 * bootDiv.clientHeight); // Scroll top plus 10 percent of the height
-              // Call the function again with a random delay
-              setTimeout(typeCharacter, getRandomSpeed(10, 100)); // 50 to 150 can be replaced with any range you prefer
+              if (mistypes < maxMistypes && Math.random() < 0.05) {
+                const typo = getTypo(txt.charAt(i));
+                line.textContent += typo;
+                bootDiv.scrollTop = bootDiv.scrollHeight + (0.1 * bootDiv.clientHeight);
+                setTimeout(() => {
+                  // Delete the typo one by one
+                  const deleteTypo = () => {
+                    if (line.textContent.endsWith(typo)) {
+                      line.textContent = line.textContent.slice(0, -1);
+                      bootDiv.scrollTop = bootDiv.scrollHeight + (0.1 * bootDiv.clientHeight);
+                      setTimeout(deleteTypo, mistypeDelay);
+                    } else {
+                      line.textContent += txt.charAt(i);
+                      i++;
+                      mistypes++;
+                      bootDiv.scrollTop = bootDiv.scrollHeight + (0.1 * bootDiv.clientHeight);
+                      setTimeout(typeCharacter, getRandomSpeed(5, 65));  // adjusted typing speed here
+                    }
+                  };
+                  deleteTypo();
+                }, mistypeDelay);
+              } else {
+                line.textContent += txt.charAt(i);
+                i++;
+                bootDiv.scrollTop = bootDiv.scrollHeight + (0.1 * bootDiv.clientHeight);
+                setTimeout(typeCharacter, getRandomSpeed(5, 65));  // adjusted typing speed here
+              }
             } else {
               resolve();
             }
@@ -63,6 +124,9 @@ const typeWriter = async (sqlLine, speed) => {
     }
   });
 };
+
+
+
 
 
 
@@ -104,7 +168,7 @@ const linuxSequence = [
 
 
 const sqlSequence = [
-    { text: "$ sqlplus proactuser/verysecurepassword@proactdbsvr1:1521/ORCL" , typed: true, delay: 100 },
+    { text: "sqlplus proactuser/verysecurepassword@proactdbsvr1:1521/ORCL" ,typingDelay: 3000, bashPrompt: true ,isMistyped: true, typed: true, delay: 100 },
     { text: '<br>', delay: 0, isHTML: true },  
     { text: `SQL*Plus: Release 19.0.0.0.0 - Production on ${formattedDate} ${formattedTime}` , delay: 100 },
     { text: "Version 19.17.0.0.0" ,  delay: 100 },
@@ -117,16 +181,24 @@ const sqlSequence = [
     { text: '<br>', delay: 0, isHTML: true },        
     { text: "DESCRIBE Jake", typingDelay: 2000, sqlPrompt: true, typed: true, delay: 1000 },
     { text: '<br>', delay: 0, isHTML: true },    
-    { text: "Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Null?   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  Type", delay: 100, isHTML: true },    
-    { text: "------------- ----------- ----------", delay: 100 },    
-    { text: "FAREWELL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOT NULL&nbsp;&nbsp;&nbsp; VARCHAR2(4000)", isHTML: true, delay: 0 },
-    { text: "STARTDATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOT NULL&nbsp;&nbsp;&nbsp; TIMESTAMP", isHTML: true, delay: 0 },	
-    { text: "ENDDATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOT NULL&nbsp;&nbsp;&nbsp; TIMESTAMP", isHTML: true, delay: 0 },	
-    { text: "IMAGE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOT NULL&nbsp;&nbsp;&nbsp; CLOB", isHTML: true, delay: 0 },	
+	{ text: "Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Null?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Type", delay: 100, isHTML: true },    
+	{ text: "------------------------- ----------- ----------", delay: 100 },    
+	{ text: "FAREWELL	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;				NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;VARCHAR2(4000)", isHTML: true, delay: 25 },
+	{ text: "STARTDATE	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;						NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;TIMESTAMP", isHTML: true, delay: 25 },    
+	{ text: "ENDDATE	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;			NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;TIMESTAMP", isHTML: true, delay: 25 },        
+	{ text: "LINUX_OR_WINDOWS	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;														NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;VARCHAR2(7)", isHTML: true, delay: 25 },
+	{ text: "LOVES_TRON_YN	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;											NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;NUMBER(1)", isHTML: true, delay: 25 },
+	{ text: "OWNED_SEGA_MEGADRIVE	&nbsp;&nbsp;&nbsp;&nbsp;																			NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;NUMBER(1)", isHTML: true, delay: 25 },
+	{ text: "FAVORITE_DOOM_LEVEL	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;																		NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;VARCHAR2(255)", isHTML: true, delay: 25 },
+	{ text: "PI_MEMORIZED_TO	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;													NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;NUMBER(1)", isHTML: true, delay: 25 },
+	{ text: "BEST_TNMT_TURTLE	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;														NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;VARCHAR2(255)", isHTML: true, delay: 25 },
+	{ text: "HAD_CRUSH_ON_LARA_CROFT	&nbsp;																							NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;NUMBER(1)", isHTML: true, delay: 25 },
+	{ text: "QTY_FLOPPY_DISKS_OWNED	&nbsp;&nbsp;																						NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;NUMBER", isHTML: true, delay: 25 },    
+	{ text: "IMAGE	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;CLOB", isHTML: true, delay: 25 },
     { text: '<br>', delay: 0, isHTML: true }, 
 	
 	
-    { text: "Select TO_Char(Startdate, 'yyyy-mm-dd') FROM Jake;", typingDelay: 2000, sqlPrompt: true, typed: true, delay: 500 },
+    { text: "Select TO_Char(Startdate, 'yyyy-mm-dd') FROM Jake;" ,isMistyped: true, typingDelay: 5000, sqlPrompt: true, typed: true, delay: 500 },
     { text: '<br>', delay: 0, isHTML: true },    
     { text: "STARTDATE", delay: 0, isHTML: true }, 
     { text: "----------", delay: 0, isHTML: true }, 
@@ -136,7 +208,7 @@ const sqlSequence = [
     { text: '<br>', delay: 0, isHTML: true },  
 	
 	
-    { text: "SeleCT to_CHAR(ENDdATE, 'yyyy-mM-DD') FROM Jake;", typingDelay: 2000, sqlPrompt: true, typed: true, delay: 500 },
+    { text: "SeleCT to_CHAR(ENDdATE, 'yyyy-mM-DD') FROM Jake;" ,isMistyped: true, typingDelay: 2000, sqlPrompt: true, typed: true, delay: 500 },
     { text: '<br>', delay: 0, isHTML: true },    
     { text: "ENDDATE", delay: 0, isHTML: true }, 
     { text: "----------", delay: 0, isHTML: true }, 
@@ -146,7 +218,7 @@ const sqlSequence = [
     { text: '<br>', delay: 0, isHTML: true },  
 
 
-    { text: "select Round(enddatE - Startdate) AS Days_At_Proact FROM Jake;", typingDelay: 2000, sqlPrompt: true, typed: true, delay: 500 },
+    { text: "select Round(enddatE - Startdate) AS Days_At_Proact FROM Jake;" ,isMistyped: true, typingDelay: 2000, sqlPrompt: true, typed: true, delay: 500 },
     { text: '<br>', delay: 0, isHTML: true },  
     { text: "DAYS_AT_PROACT", delay: 0, isHTML: true }, 
     { text: "--------------", delay: 0, isHTML: true }, 	
@@ -155,43 +227,43 @@ const sqlSequence = [
     { text: "1 row selected", delay: 0, isHTML: true }, 
     { text: '<br>', delay: 0, isHTML: true },  
 
-	
-    { text: "SELECT farewell FROM Jake;", typingDelay: 4000, sqlPrompt: true, typed: true, delay: 1000 },
+	{ text: "set pages 50 lines 70" , typingDelay: 2000, sqlPrompt: true, typed: true, delay: 1000 },
+    { text: "SELECT farewell FROM Jake;" , typingDelay: 4000, sqlPrompt: true, typed: true, delay: 1000 },
     { text: '<br>', delay: 0, isHTML: true },    
     { text: '<br>', delay: 0, isHTML: true },    
     { text: "FAREWELL", delay: 0, isHTML: true }, 
-    { text: "-------------------------------------------------------------------------", delay: 0, isHTML: true }, 
+    { text: "------------------------------------------------------", delay: 0, isHTML: true }, 
 	
-    { text: "If you\'re reading this, it\'s not because a database is down", typed: true, delay: 100 },
-	{ text: "or we\'re about to hit our storage limit.", typed: true, delay: 200 },
-    { text: "In fact, it\'s the opposite ... ", typed: true, delay: 500 },
-	{ text: "it\'s an announcement of a table drop of a different kind.", typed: true, delay: 200 },
-    { text: "I\'ve finally decided to take the plunge and migrate my system. ", typed: true, delay: 500 },
-    { text: "This is not a system crash, it\'s more of an upgrade, if you will.", typed: true, delay: 1000 },
+    { text: "If you\'re reading this, it\'s not because a database is down", typed: true, delay: 100 ,isMistyped: true,},
+	{ text: "or we\'re about to hit our storage limit.", typed: true, delay: 200 ,isMistyped: true,},
+    { text: "In fact, it\'s the opposite ... ", typed: true, delay: 500 ,isMistyped: true,},
+	{ text: "it\'s an announcement of a table drop of a different kind.", typed: true, delay: 200 ,isMistyped: true,},
+    { text: "I\'ve finally decided to take the plunge and migrate my system. ", typed: true, delay: 500 ,isMistyped: true,},
+    { text: "This is not a system crash, it\'s more of an upgrade, if you will.", typed: true, delay: 1000 ,isMistyped: true,},
 	{ text: '<br>', delay: 0, isHTML: true }, 
-    { text: "As your friendly neighborhood DBA, I\'ve spent countless hours ", typed: true, delay: 50 },
+    { text: "As your friendly neighborhood DBA, I\'ve spent countless hours ", typed: true, delay: 50 ,isMistyped: true,},
 	{ text: "diagnosing why \"it\'s not a database issue\" ",typed: true, delay: 50 },
-	{ text: "and showing the magical powers of turning it off and on again. ", typed: true, delay: 500 },
-    { text: "I\'ve encountered many a NULL value, ", typed: true, delay: 55 },
+	{ text: "and showing the magical powers of turning it off and on again. ", typed: true, delay: 500 ,isMistyped: true,},
+    { text: "I\'ve encountered many a NULL value, ", typed: true, delay: 55 ,isMistyped: true,},
 	{ text: "rebuilt countless indexes,", typed: true, delay: 55 },
-	{ text: "imported more schemas than there are grains of sand on Rhyl beach, ", typed: true, delay: 70 },
-	{ text: "and have been the hero, villain,", typed: true, delay: 55 },
-	{ text: "and sometimes the \'unknown stored procedure\' of the day. ", typed: true, delay: 750 },
-    { text: "But now, it is time for me to commit my last transaction here,", typed: true, delay: 50 },
-	{ text: "release all my locks and free up some memory space for new processes.", typed: true, delay: 500 },
+	{ text: "imported more schemas than there are grains of sand on Rhyl beach, ", typed: true, delay: 70 ,isMistyped: true,},
+	{ text: "and have been the hero, villain,", typed: true, delay: 55 ,isMistyped: true,},
+	{ text: "and sometimes the \'unknown stored procedure\' of the day. ", typed: true, delay: 750 ,isMistyped: true,},
+    { text: "But now, it is time for me to commit my last transaction here,", typed: true, delay: 50 ,isMistyped: true,},
+	{ text: "release all my locks and free up some memory space for new processes.", typed: true, delay: 500 ,isMistyped: true,},
     { text: '<br>', delay: 0, isHTML: true }, 
-    { text: "This is not a goodbye, but a \'see you later\'.", typed: true, delay: 500 },
+    { text: "This is not a goodbye, but a \'see you later\'.", typed: true, delay: 500 ,isMistyped: true,},
     { text: '<br>', delay: 0, isHTML: true }, 
-    { text: "Our data may be relational,", typed: true, delay: 50 },
-    { text: "but our friendship doesn't require a JOIN operation.", typed: true, delay: 50 },
-    { text: "I’m keeping open all ports for fun and non-work related chats.", typed: true, delay: 50 },
-    { text: "Ping me anytime and I promise to return more than just a server status.", typed: true, delay: 500 },
+    { text: "Our data may be relational,", typed: true, delay: 50 ,isMistyped: true,},
+    { text: "but our friendship doesn't require a JOIN operation.", typed: true, delay: 50 ,isMistyped: true,},
+    { text: "I’m keeping open all ports for fun and non-work related chats.", typed: true, delay: 50 ,isMistyped: true,},
+    { text: "Ping me anytime and I promise to return more than just a server status.", typed: true, delay: 500 ,isMistyped: true,},
     { text: '<br>', delay: 0, isHTML: true }, 
-    { text: "Thank you for all the laughter, challenges, and null pointers. ", typed: true, delay: 500 },
+    { text: "Thank you for all the laughter, challenges, and null pointers. ", typed: true, delay: 500 ,isMistyped: true,},
     { text: '<br>', delay: 0, isHTML: true }, 
-    { text: "Keep those queries quick, indexes tuned, and your downtime low.", typed: true, delay: 50 },
+    { text: "Keep those queries quick, indexes tuned, and your downtime low.", typed: true, delay: 50 ,isMistyped: true,},
     { text: '<br>', delay: 0, isHTML: true }, 
-    { text: "Until we meet at a cross join in life...", typed: true, delay: 50 },
+    { text: "Until we meet at a cross join in life...", typed: true, delay: 50 ,isMistyped: true,},
     { text: '<br>', delay: 0, isHTML: true }, 
     { text: "Jake :)", typed: true, delay: 50 },
     { text: '<br>', delay: 0, isHTML: true }, 
@@ -205,7 +277,7 @@ const sqlSequence = [
 	{ text: '<br>', delay: 0, isHTML: true }, 
 	
 	
-	{ text: "SELECT DBMS_LOB.SUBSTR(IMAGE, 4000, 1) AS JakePic FROM Jake;", typingDelay: 3000, sqlPrompt: true, typed: true, delay: 500 },
+	{ text: "SELECT DBMS_LOB.SUBSTR(IMAGE, 4000, 1) AS JakePic FROM Jake;", typingDelay: 3000, sqlPrompt: true, typed: true, delay: 500 ,isMistyped: true,},
 	
 		
     { text: '<br>', delay: 0, isHTML: true },    
@@ -215,38 +287,38 @@ const sqlSequence = [
 	
 	
 	
- 	{ text: "<pre>                                    ./(((///.</pre>", delay: 40, isHTML: true },                                   
- 	{ text: "<pre>                            ,/#%&&&&&&&&&&&&&&&&%#/,.</pre>", delay: 40, isHTML: true },                                
- 	{ text: "<pre>                        ,(%&&&&&&&&&&&&&&&&&&&&&&&&&&%#*</pre>", delay: 40, isHTML: true },                             
- 	{ text: "<pre>                     .(&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&#,</pre>", delay: 40, isHTML: true },                          
- 	{ text: "<pre>                    /%&&&&&&&&&&&&&&&@@@@@@@@@&&&&&&&&&&&&&#.</pre>", delay: 40, isHTML: true },                        
- 	{ text: "<pre>                  ,#&&&&&&&&&&&&&@&@@@@@@@@@@@@@@@&&&&&&&&&&%*</pre>", delay: 40, isHTML: true },                       
-	{ text: "<pre>                  .%&&&&&&&&&&&@@@@@@@@@@@@@@@@@@@@@@@@&&&&&&&%,</pre>", delay: 40, isHTML: true },                      
-	{ text: "<pre>                  (&&&&&&&&%#((/(((%&@@@@@@@@@@@@@@@@@@&&&&&&&&#</pre>", delay: 40, isHTML: true },                      
-	{ text: "<pre>                 .%&&&&&%/,,,........*(%&@@@@@@@@@#(/**/(%&&&&&%.</pre>", delay: 40, isHTML: true },                     
-	{ text: "<pre>                 ,%&&&&(*/(%&&@@@&%(*../&@@@@@@#,,......,,,*#&&&, </pre>", delay: 40, isHTML: true },                    
-	{ text: "<pre>                (#&&&&%#&&&&&&&&&&&&&&&&&&&&&&&&#%%&&&&&&%(/*(&&. </pre>", delay: 40, isHTML: true },                    
-	{ text: "<pre>                 *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&#&%. </pre>", delay: 40, isHTML: true },                    
-	{ text: "<pre>                ,,/%&&&&&&&&&%%####%&&&&&&&&&&&&&&&&&&&&&&&&&&&&% </pre>", delay: 40, isHTML: true },      
-	{ text: "<pre>           ./&&&&//%&&&&&%#%#/(. *(&%%&&&&&&&&&&&(/*.,*(#%%&&&%(, </pre>", delay: 40, isHTML: true },                    
-	{ text: "<pre>            ,#%###**%&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&%%((#%&&&&&%/#&&,</pre>", delay: 40, isHTML: true },                   
-	{ text: "<pre>            *%##(,/%&&@@@@@@@@@@@@@@@&@&&&&&&&&&@&@&@&@&@&&&&%/(#%* </pre>", delay: 40, isHTML: true },                  
-	{ text: "<pre>             *###,*%&@@@@@@@@@@@@@@@@@&&&&&@@&&&@@@@@@@@@@@@@%*(##. </pre>", delay: 40, isHTML: true },                  
- 	{ text: "<pre>           .,%%(,,(&&@@@@@@@@@@@@@&&&&&&&&&@&&&&&@@@@@@@@@@&(*%#.  </pre>", delay: 40, isHTML: true },                  
- 	{ text: "<pre>            (&&(,**(&&@@@@@@@@@@@@@%#(//#%%%#(/#&@@@@@@@@@&#**## </pre>", delay: 40, isHTML: true },      
- 	{ text: "<pre>             *#(,,***(%&&&&&/*///((((((#%%%%%%&&&@@@@@@@@&(**/&% </pre>", delay: 40, isHTML: true },      
- 	{ text: "<pre>                ..,*****/(##********/*///*//*/*///**(%@&#*,,,/% </pre>", delay: 40, isHTML: true },      
-	{ text: "<pre>                 ..,,***********,/%&%%%##((///*******/(/**,,..  </pre>", delay: 40, isHTML: true },                      
- 	{ text: "<pre>                 ...,,*********%&%&&&@&&&&&&&&&@&*******,,..    </pre>", delay: 40, isHTML: true },                     
-	{ text: "<pre>                   ....,,******,(%&&&%%%%##((##%%%/****,,...   </pre>", delay: 40, isHTML: true },                       
- 	{ text: "<pre>                   .....,**********//(########/***,,.....    </pre>", delay: 40, isHTML: true },                       
- 	{ text: "<pre>                   ...,,....,,,,******************,,,....... </pre>", delay: 40, isHTML: true },                          
-	{ text: "<pre>                    .,,,,,,,,,,,.....,,,,,,,,**,****,,,,....,,,,,,, </pre>", delay: 40, isHTML: true },                     
-	{ text: "<pre>              .,,,,,,,,,,,,,,,,,.........,,,,,,......,,,,,,,,,,,,,,,.   </pre>", delay: 40, isHTML: true },                 
-	{ text: "<pre>            .,,,,,,,,,,,,,,,,,,,,,............,,,,,,,,,,,,,,,,,,,,,,.. </pre>", delay: 40, isHTML: true },      
-	{ text: "<pre>           .,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,.,,, </pre>", delay: 40, isHTML: true },      
-	{ text: "<pre>           ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, </pre>", delay: 40, isHTML: true },      
-	{ text: "<pre>         ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, </pre>", delay: 40, isHTML: true }      
+ 	{ text: "<pre>                         ./(((///.</pre>", delay: 40, isHTML: true },                                   
+ 	{ text: "<pre>                 ,/#%&&&&&&&&&&&&&&&&%#/,.</pre>", delay: 40, isHTML: true },                                
+ 	{ text: "<pre>             ,(%&&&&&&&&&&&&&&&&&&&&&&&&&&%#*</pre>", delay: 40, isHTML: true },                             
+ 	{ text: "<pre>          .(&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&#,</pre>", delay: 40, isHTML: true },                          
+ 	{ text: "<pre>         /%&&&&&&&&&&&&&&&@@@@@@@@@&&&&&&&&&&&&&#.</pre>", delay: 40, isHTML: true },                        
+ 	{ text: "<pre>       ,#&&&&&&&&&&&&&@&@@@@@@@@@@@@@@@&&&&&&&&&&%*</pre>", delay: 40, isHTML: true },                       
+	{ text: "<pre>       .%&&&&&&&&&&&@@@@@@@@@@@@@@@@@@@@@@@@&&&&&&&%,</pre>", delay: 40, isHTML: true },                      
+	{ text: "<pre>       (&&&&&&&&%#((/(((%&@@@@@@@@@@@@@@@@@@&&&&&&&&#</pre>", delay: 40, isHTML: true },                      
+	{ text: "<pre>      .%&&&&&%/,,,........*(%&@@@@@@@@@#(/**/(%&&&&&%.</pre>", delay: 40, isHTML: true },                     
+	{ text: "<pre>      ,%&&&&(*/(%&&@@@&%(*../&@@@@@@#,,......,,,*#&&&, </pre>", delay: 40, isHTML: true },                    
+	{ text: "<pre>     (#&&&&%#&&&&&&&&&&&&&&&&&&&&&&&&#%%&&&&&&%(/*(&&. </pre>", delay: 40, isHTML: true },                    
+	{ text: "<pre>      *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&#&%. </pre>", delay: 40, isHTML: true },                    
+	{ text: "<pre>     ,,/%&&&&&&&&&%%####%&&&&&&&&&&&&&&&&&&&&&&&&&&&&% </pre>", delay: 40, isHTML: true },      
+	{ text: "<pre>./&&&&//%&&&&&%#%#/(. *(&%%&&&&&&&&&&&(/*.,*(#%%&&&%(, </pre>", delay: 40, isHTML: true },                    
+	{ text: "<pre> ,#%###**%&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&%%((#%&&&&&%/#&&,</pre>", delay: 40, isHTML: true },                   
+	{ text: "<pre> *%##(,/%&&@@@@@@@@@@@@@@@&@&&&&&&&&&@&@&@&@&@&&&&%/(#%* </pre>", delay: 40, isHTML: true },                  
+	{ text: "<pre>  *###,*%&@@@@@@@@@@@@@@@@@&&&&&@@&&&@@@@@@@@@@@@@%*(##. </pre>", delay: 40, isHTML: true },                  
+ 	{ text: "<pre>.,%%(,,(&&@@@@@@@@@@@@@&&&&&&&&&@&&&&&@@@@@@@@@@&(*%#.  </pre>", delay: 40, isHTML: true },                  
+ 	{ text: "<pre> (&&(,**(&&@@@@@@@@@@@@@%#(//#%%%#(/#&@@@@@@@@@&#**## </pre>", delay: 40, isHTML: true },      
+ 	{ text: "<pre>  *#(,,***(%&&&&&/*///((((((#%%%%%%&&&@@@@@@@@&(**/&% </pre>", delay: 40, isHTML: true },      
+ 	{ text: "<pre>     ..,*****/(##********/*///*//*/*///**(%@&#*,,,/% </pre>", delay: 40, isHTML: true },      
+	{ text: "<pre>      ..,,***********,/%&%%%##((///*******/(/**,,..  </pre>", delay: 40, isHTML: true },                      
+ 	{ text: "<pre>      ...,,*********%&%&&&@&&&&&&&&&@&*******,,..    </pre>", delay: 40, isHTML: true },                     
+	{ text: "<pre>        ....,,******,(%&&&%%%%##((##%%%/****,,...   </pre>", delay: 40, isHTML: true },                       
+ 	{ text: "<pre>        .....,**********//(########/***,,.....    </pre>", delay: 40, isHTML: true },                       
+ 	{ text: "<pre>        ...,,....,,,,******************,,,....... </pre>", delay: 40, isHTML: true },                          
+	{ text: "<pre>         .,,,,,,,,,,,.....,,,,,,,,**,****,,,,....,,,,,,, </pre>", delay: 40, isHTML: true },                     
+	{ text: "<pre>   .,,,,,,,,,,,,,,,,,.........,,,,,,......,,,,,,,,,,,,,,,.   </pre>", delay: 40, isHTML: true },                 
+	{ text: "<pre> .,,,,,,,,,,,,,,,,,,,,,............,,,,,,,,,,,,,,,,,,,,,,.. </pre>", delay: 40, isHTML: true },      
+	{ text: "<pre>.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,.,,, </pre>", delay: 40, isHTML: true },      
+	{ text: "<pre>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, </pre>", delay: 40, isHTML: true },      
+	{ text: "<pre>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, </pre>", delay: 40, isHTML: true }      
 ];
 
 
