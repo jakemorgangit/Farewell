@@ -3,15 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Farewell :)</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Farewell Proact :)</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        body {
+            background: black;
+            font-family: 'Courier New', Courier, monospace;
+            color: white;
+        }
+        #intro {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #introText {
+            color: white;
+            animation: flash 1s linear infinite;
+            font-size: 2em;
+        }
+        #introTextOn {
+            color: green;
+            display: none;
+            font-size: 2em;
+        }
+        #introImage, #introImageOn {
+            max-height: 500px;
+            cursor: pointer;
+        }
+        @keyframes flash {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+        }
+        /* toned down shake effect */
+        .shake {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% {transform: translateX(0);}
+            10%, 30%, 50%, 70%, 90% {transform: translateX(-5px);}
+            20%, 40%, 60%, 80% {transform: translateX(5px);}
+        }
+    </style>
 </head>
 <body>
-    <div id="logo">
-        <img src="epa.png" alt="Energy Star logo">
+    <div id="intro">
+        <p id="introText">[PRESS ME]</p>
+        <p id="introTextOn">BEEP ...</p>
+        <img id="introImage" src="486-off.png" alt="Image of a PC tower off" />
+        <img id="introImageOn" src="486-on.png" alt="Image of a PC tower on" style="display: none;" />
     </div>
-    <div id="bootSequence"></div>
-    <div id="sqlSequence"></div>
-    <script src="script.js"></script>
+    <script>
+        $(document).ready(function(){
+            $('#introImage').click(function() {
+                $(this).addClass('shake');
+                $('#introText').hide();
+                $('#introTextOn').show();
+                setTimeout(() => {
+                    $(this).hide();
+                    $('#introImageOn').show();
+                    setTimeout(function() {
+                        $('#intro').fadeOut(2000, function() {
+                            window.location.href = "main.html";
+                        });
+                    }, 1000); // Wait 1 second before starting to fade out
+                }, 200); // Wait 0.5 seconds before changing the image
+            });
+        });
+    </script>
 </body>
 </html>
