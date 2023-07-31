@@ -10,6 +10,7 @@ body {
     opacity: 0;
     filter: blur(20px);
     animation: fade-in-blur-out 12s forwards;
+	cursor: none; /* Hide cursor */
 }
 
 /* Media Queries for responsiveness */
