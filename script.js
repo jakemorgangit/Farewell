@@ -133,7 +133,7 @@ const typeWriter = async (sqlLine, speed) => {
 
 const bootSequence = [
     { text: "Award Modular BIOS v4.51PG, An Energy Star Ally", delay: 0 },
-	{ text: "Copyright (C) 1984-95, Award Software. Inc", delay: 2000 },
+	{ text: "Copyright (C) 1984-97, Award Software. Inc", delay: 2000 },
 	{ text: '<br>', delay: 0, isHTML: true },
 	{ text: "Version JM-1984", delay: 2000 },
 	{ text: '<br>', delay: 0, isHTML: true },
@@ -181,8 +181,8 @@ const sqlSequence = [
     { text: '<br>', delay: 0, isHTML: true },        
     { text: "DESCRIBE Jake", typingDelay: 2000, sqlPrompt: true, typed: true, delay: 1000 },
     { text: '<br>', delay: 0, isHTML: true },    
-	{ text: "Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Null?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Type", delay: 100, isHTML: true },    
-	{ text: "------------------------- ----------- ----------", delay: 100 },    
+	{ text: "Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Null?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Type", delay: 100, isHTML: true },    
+	{ text: "------------------------- ----------- -------------", delay: 100 },    
 	{ text: "FAREWELL	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;				NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;VARCHAR2(4000)", isHTML: true, delay: 25 },
 	{ text: "STARTDATE	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;						NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;TIMESTAMP", isHTML: true, delay: 25 },    
 	{ text: "ENDDATE	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;			NOT NULL&nbsp;&nbsp;&nbsp;&nbsp;TIMESTAMP", isHTML: true, delay: 25 },        
@@ -227,50 +227,51 @@ const sqlSequence = [
     { text: "1 row selected", delay: 0, isHTML: true }, 
     { text: '<br>', delay: 0, isHTML: true },  
 
-	{ text: "set pages 50 lines 70" , typingDelay: 2000, sqlPrompt: true, typed: true, delay: 1000 },
-    { text: "SELECT farewell FROM Jake;" , typingDelay: 4000, sqlPrompt: true, typed: true, delay: 1000 },
+	{ text: "set pages 50 lines 70" , typingDelay: 1000, sqlPrompt: true, typed: true, delay: 1000 },
+    { text: "SELECT farewell FROM Jake;" , typingDelay: 1000, sqlPrompt: true, typed: true, delay: 4000 },
     { text: '<br>', delay: 0, isHTML: true },    
     { text: '<br>', delay: 0, isHTML: true },    
     { text: "FAREWELL", delay: 0, isHTML: true }, 
-    { text: "------------------------------------------------------", delay: 0, isHTML: true }, 
+    { text: "--------------------------------", delay: 0, isHTML: true }, 
 	
     { text: "If you\'re reading this, it\'s not because a database is down", typed: true, delay: 100 ,isMistyped: true,},
 	{ text: "or we\'re about to hit our storage limit.", typed: true, delay: 200 ,isMistyped: true,},
     { text: "In fact, it\'s the opposite ... ", typed: true, delay: 500 ,isMistyped: true,},
 	{ text: "it\'s an announcement of a table drop of a different kind.", typed: true, delay: 200 ,isMistyped: true,},
-    { text: "I\'ve finally decided to take the plunge and migrate my system. ", typed: true, delay: 500 ,isMistyped: true,},
-    { text: "This is not a system crash, it\'s more of an upgrade, if you will.", typed: true, delay: 1000 ,isMistyped: true,},
+    { text: "I\'ve finally decided to take the plunge and migrate my system", typed: true, delay: 500 ,isMistyped: true,},
+    { text: "to an entirely different platform.", typed: true, delay: 1000 ,isMistyped: true,},
 	{ text: '<br>', delay: 0, isHTML: true }, 
     { text: "As your friendly neighborhood DBA, I\'ve spent countless hours ", typed: true, delay: 50 ,isMistyped: true,},
 	{ text: "diagnosing why \"it\'s not a database issue\" ",typed: true, delay: 50 },
-	{ text: "and showing the magical powers of turning it off and on again. ", typed: true, delay: 500 ,isMistyped: true,},
+	{ text: "and demononstrating the magical powers of turning it off and on again. ", typed: true, delay: 500 ,isMistyped: true,},
     { text: "I\'ve encountered many a NULL value, ", typed: true, delay: 55 ,isMistyped: true,},
 	{ text: "rebuilt countless indexes,", typed: true, delay: 55 },
 	{ text: "imported more schemas than there are grains of sand on Rhyl beach, ", typed: true, delay: 70 ,isMistyped: true,},
-	{ text: "and have been the hero, villain,", typed: true, delay: 55 ,isMistyped: true,},
+	{ text: "and have been the hero, villain,", typed: true, delay: 100 ,isMistyped: true,},
 	{ text: "and sometimes the \'unknown stored procedure\' of the day. ", typed: true, delay: 750 ,isMistyped: true,},
+	{ text: '<br>', delay: 0, isHTML: true }, 
     { text: "But now, it is time for me to commit my last transaction here,", typed: true, delay: 50 ,isMistyped: true,},
 	{ text: "release all my locks and free up some memory space for new processes.", typed: true, delay: 500 ,isMistyped: true,},
     { text: '<br>', delay: 0, isHTML: true }, 
     { text: "This is not a goodbye, but a \'see you later\'.", typed: true, delay: 500 ,isMistyped: true,},
     { text: '<br>', delay: 0, isHTML: true }, 
     { text: "Our data may be relational,", typed: true, delay: 50 ,isMistyped: true,},
-    { text: "but our friendship doesn't require a JOIN operation.", typed: true, delay: 50 ,isMistyped: true,},
-    { text: "I’m keeping open all ports for fun and non-work related chats.", typed: true, delay: 50 ,isMistyped: true,},
+    { text: "but our friendship doesn't require a JOIN operation.", typed: true, delay: 250 ,isMistyped: true,},
+    { text: "I’m keeping open all ports for fun and non-work related chats.", typed: true, delay: 250 ,isMistyped: true,},
     { text: "Ping me anytime and I promise to return more than just a server status.", typed: true, delay: 500 ,isMistyped: true,},
     { text: '<br>', delay: 0, isHTML: true }, 
     { text: "Thank you for all the laughter, challenges, and null pointers. ", typed: true, delay: 500 ,isMistyped: true,},
     { text: '<br>', delay: 0, isHTML: true }, 
     { text: "Keep those queries quick, indexes tuned, and your downtime low.", typed: true, delay: 50 ,isMistyped: true,},
     { text: '<br>', delay: 0, isHTML: true }, 
-    { text: "Until we meet at a cross join in life...", typed: true, delay: 50 ,isMistyped: true,},
+    { text: "Until we meet at a CROSS JOIN in life...", typed: true, delay: 50 ,isMistyped: true,},
     { text: '<br>', delay: 0, isHTML: true }, 
     { text: "Jake :)", typed: true, delay: 50 },
     { text: '<br>', delay: 0, isHTML: true }, 
     { text: "jake@jakemorgan.co.uk", typed: true, delay: 50 },
 	{ text: '<br>', delay: 0, isHTML: true }, 
 	{ text: '<br>', delay: 0, isHTML: true }, 
-	{ text: "26 rows selected",isHTML: true, delay: 0 },
+	{ text: "34 rows selected",isHTML: true, delay: 0 },
 	
 	
 	{ text: '<br>', delay: 0, isHTML: true }, 
@@ -284,8 +285,6 @@ const sqlSequence = [
     { text: "JAKEPIC", delay: 0, isHTML: true }, 
     { text: "-------------------------------------------------------------------------", delay: 0, isHTML: true }, 
 
-	
-	
 	
  	{ text: "<pre>                         ./(((///.</pre>", delay: 40, isHTML: true },                                   
  	{ text: "<pre>                 ,/#%&&&&&&&&&&&&&&&&%#/,.</pre>", delay: 40, isHTML: true },                                
@@ -318,7 +317,13 @@ const sqlSequence = [
 	{ text: "<pre> .,,,,,,,,,,,,,,,,,,,,,............,,,,,,,,,,,,,,,,,,,,,,.. </pre>", delay: 40, isHTML: true },      
 	{ text: "<pre>.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,.,,, </pre>", delay: 40, isHTML: true },      
 	{ text: "<pre>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, </pre>", delay: 40, isHTML: true },      
-	{ text: "<pre>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, </pre>", delay: 40, isHTML: true }      
+	{ text: "<pre>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, </pre>", delay: 40, isHTML: true },    
+
+	{ text: '<br>', delay:5000, isHTML: true }, 
+	{ text: 'You\'ve reached the end! achievement unlocked: Persistence++.', delay: 1500, isHTML: true },
+	{ text: 'Apologies for all the database puns, I don\'t get out much.', delay: 1000, isHTML: true },
+	{ text: 'Press ESC if you\'re on a PC, it\'s time to return to the realm of GUI.', delay: 0, isHTML: true }
+
 ];
 
 
