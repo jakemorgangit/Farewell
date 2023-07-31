@@ -10,6 +10,8 @@
             background: black;
             font-family: 'Courier New', Courier, monospace;
             color: white;
+            overflow: hidden;
+            cursor: none; /* Hide cursor */
         }
         #intro {
             width: 100vw;
@@ -18,6 +20,12 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            position: relative;
+        }
+        #introText, #introTextOn {
+            position: absolute;
+            top: 10%;
+            z-index: 1;
         }
         #introText {
             color: white;
@@ -32,6 +40,18 @@
         #introImage, #introImageOn {
             max-height: 500px;
             cursor: pointer;
+            position: absolute; 
+            transition: transform 3s 2s; /* Add delay for the zoom */
+        }
+        #introImageOn.zoom {
+            transform: scale(11);
+        }
+        iframe {
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            border: none;
+            overflow: hidden;
         }
         @keyframes flash {
             0%, 100% {
@@ -41,7 +61,6 @@
                 opacity: 0;
             }
         }
-        /* toned down shake effect */
         .shake {
             animation: shake 0.5s;
         }
@@ -54,26 +73,47 @@
 </head>
 <body>
     <div id="intro">
-        <p id="introText">[PRESS ME]</p>
+        <p id="introText">&#11174; PRESS ME &#11175;</p>
         <p id="introTextOn">BEEP ...</p>
-        <img id="introImage" src="486-off.png" alt="Image of a PC tower off" />
-        <img id="introImageOn" src="486-on.png" alt="Image of a PC tower on" style="display: none;" />
+        <img id="introImage" src="PC-OFF.png" alt="Image of a PC tower off" />
+        <img id="introImageOn" src="PC-ON.png" alt="Image of a PC tower on" style="display: none;" />
     </div>
+ 
+	<iframe id="main" style="display: none;" scrolling="no"></iframe>
+
     <script>
+        function goFullScreen() {
+            var docElement = document.documentElement;
+            if (docElement.requestFullscreen) {
+                docElement.requestFullscreen();
+            } else if (docElement.mozRequestFullScreen) { // Firefox
+                docElement.mozRequestFullScreen();
+            } else if (docElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                docElement.webkitRequestFullscreen();
+            } else if (docElement.msRequestFullscreen) { // IE/Edge
+                docElement.msRequestFullscreen();
+            }
+        }
+
         $(document).ready(function(){
             $('#introImage').click(function() {
+                goFullScreen();
                 $(this).addClass('shake');
                 $('#introText').hide();
-                $('#introTextOn').show();
                 setTimeout(() => {
                     $(this).hide();
                     $('#introImageOn').show();
+                    $('#introTextOn').show();
                     setTimeout(function() {
-                        $('#intro').fadeOut(2000, function() {
-                            window.location.href = "main.html";
-                        });
-                    }, 1000); // Wait 1 second before starting to fade out
-                }, 200); // Wait 0.5 seconds before changing the image
+                        $('#introTextOn').hide(); 
+                        $('#introImageOn').addClass('zoom'); 
+                        setTimeout(function() {
+                            $("#intro").hide();
+                            $("#main").attr("src", "main.html");
+                            $("#main").show();
+                        }, 4500); /* Add delay time to the time before switching to main.html */
+                    }, 1000); /* Duration of BEEP text */
+                }, 200); 
             });
         });
     </script>
